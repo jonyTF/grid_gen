@@ -1,0 +1,7 @@
+ffmpeg -y -f lavfi -i color=c=white:s=1920x1080:r=30 -i 1.mov -i 2.mov -filter_complex "
+[1:v]setpts=PTS-STARTPTS, crop=x=iw*175/512:y=0:w=iw*81/256:h=ih, scale=608x1080[v1];
+[2:v]setpts=PTS-STARTPTS, crop=x=iw*175/512:y=0:w=iw*81/256:h=ih, scale=608x1080[v2];
+[0:v][v1]overlay=shortest=1:x=0:y=0[tmp0];
+[tmp0][v2]overlay=shortest=1:x=608:y=0[tmp1]
+" 
+-map "[tmp1]" -map "2:a" v1.mov
