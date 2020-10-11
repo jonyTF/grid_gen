@@ -5,3 +5,5 @@ ffmpeg -y -f lavfi -i color=c=white:s=1920x1080:r=30 -i 1.mov -i 2.mov -filter_c
 [tmp0][v2]overlay=shortest=1:x=608:y=0[tmp1]
 " 
 -map "[tmp1]" -map "2:a" v1.mov
+
+ffmpeg -y -i vids/001.mov -vf "crop=x=(iw-ih*9/16)/2:y=0:w=ih*9/16:h=ih, scale=90x160" -frames:v 1 test.jpg

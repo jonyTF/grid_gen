@@ -27,7 +27,7 @@ assert len(cols) == rows
 # Functions
 #----------
 def get_total_width(cols, vid_width):
-    return padding + cols*(vid_width+padding)
+  return padding + cols*(vid_width+padding)
 
 #-----------
 # Calculated values
@@ -50,30 +50,28 @@ vid_index = 0
 cur_row = 0
 cur_col = 0
 for filename in os.listdir(directory):
-    if filename.endswith('.mov'):
-        print(filename)
-        vid_num = vid_index + vid_index_offset
-        if start: input_str += f'-ss {start} '
-        if end: input_str += f'-to {end} '
+  if filename.endswith('.mov'):
+    vid_num = vid_index + vid_index_offset
+    if start: input_str += f'-ss {start} '
+    if end: input_str += f'-to {end} '
 
-        input_str += f'-i {os.path.join(directory, filename)} '
-        crop_str += f'[{vid_num}:v]setpts=PTS-STARTPTS, crop=x=(iw-ih*9/16)/2:y=0:w=ih*9/16:h=ih, scale={vid_width}x{vid_height}[v{vid_num}];'
+    input_str += f'-i {os.path.join(directory, filename)} '
+    crop_str += f'[{vid_num}:v]setpts=PTS-STARTPTS, crop=x=(iw-ih*9/16)/2:y=0:w=ih*9/16:h=ih, scale={vid_width}x{vid_height}[v{vid_num}];'
 
-        print(f'({cur_row}, {cur_col})')
-        xStart = round( (canvas_width - get_total_width(cols[cur_row], vid_width)) / 2 )
-        x = xStart + padding + cur_col*(vid_width+padding)
-        y = padding + cur_row*(vid_height+padding)
+    xStart = round( (canvas_width - get_total_width(cols[cur_row], vid_width)) / 2 )
+    x = xStart + padding + cur_col*(vid_width+padding)
+    y = padding + cur_row*(vid_height+padding)
 
-        overlay_str += '[0:v]' if vid_index == 0 else f'[tmp{vid_num-1}]' 
-        overlay_str += f'[v{vid_num}]overlay='
-        overlay_str += 'repeatlast=0:' if end else 'shortest=1:'  
-        overlay_str += f'x={x}:y={y}[tmp{vid_num}];' 
+    overlay_str += '[0:v]' if vid_index == 0 else f'[tmp{vid_num-1}]' 
+    overlay_str += f'[v{vid_num}]overlay='
+    overlay_str += 'repeatlast=0:' if end else 'shortest=1:'  
+    overlay_str += f'x={x}:y={y}[tmp{vid_num}];' 
 
-        vid_index += 1
-        cur_col += 1
-        if cur_col >= cols[cur_row]:
-            cur_col = 0
-            cur_row += 1
+    vid_index += 1
+    cur_col += 1
+    if cur_col >= cols[cur_row]:
+      cur_col = 0
+      cur_row += 1
 
 overlay_str = overlay_str[:-1]
 final_output = f'[tmp{vid_index - 1 + vid_index_offset}]'
