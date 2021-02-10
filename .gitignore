@@ -1,3 +1,4 @@
 *.mov
 __pycache__/
 thumbnails/
+.vscode/settings.json

@@ -1,12 +1,14 @@
 import os
 import uuid
 from subprocess import run
+import subprocess
 
 class Util():
   def __init__(self, parent):
     self.parent = parent
 
-  def run_cmd(self, cmd):
+  def run_cmd(self, cmd, root_dir='./'):
+    os.chdir(root_dir)
     return run(cmd, capture_output=True)
 
   def generate_thumbnail(self, vid_filename):
@@ -23,3 +25,12 @@ class Util():
     if result.returncode != 0:
       return (result.returncode, result.stderr.decode('utf-8'))
     return (result.returncode, thumbnail_filename)
+
+  def getFrameRate(self, filename):
+    # Get the frame rate of media file `filename`
+    result = subprocess.Popen(['ffmpeg', '-i', filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for l in result.stdout.readlines():
+        l = l.decode('utf-8')
+        if 'Video' in l:
+            return float(l[l.rindex(',', 0, l.index('fps'))+1:l.index('fps')].strip())
+    raise Exception('Framerate not found for ' + filename)

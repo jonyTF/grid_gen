@@ -1,0 +1,10 @@
+EASE BOTH:
+ffmpeg -y -f lavfi -to 10 -i color=c=gray:s=1920x1080:r=30 -vf "drawtext=fontfile='C\:/Users/Jonathan Liu/AppData/Local/Microsoft/Windows/Fonts/Roboto-Light.ttf':text='hello there!':fontcolor=white:fontsize=24:x=10:y='if(gte(t, 1), if(lte(t, 3), 10+(cos((t-1)/(3-1)*PI)+1)/2*(100-10), 10), 100)'" wat.mp4
+
+EASE IN:
+ffmpeg -y -f lavfi -to 10 -i color=c=gray:s=1920x1080:r=30 -vf "drawtext=fontfile='C\:/Users/Jonathan Liu/AppData/Local/Microsoft/Windows/Fonts/Roboto-Light.ttf':text='hello there!':fontcolor=white:fontsize=24:x=10:y='if(gte(t, 1), if(lte(t, 3), 10+(1-sin((t-1)/(3-1)*PI/2))*(100-10), 10), 100)'" wat.mp4
+
+EASE OUT:
+ffmpeg -y -f lavfi -to 10 -i color=c=gray:s=1920x1080:r=30 -vf "drawtext=fontfile='C\:/Users/Jonathan Liu/AppData/Local/Microsoft/Windows/Fonts/Roboto-Light.ttf':text='hello there!':fontcolor=white:fontsize=24:x=10:y='if(gte(t, 1), if(lte(t, 3), 10+sin((t-1)/(3-1)*PI/2+PI/2)*(100-10), 10), 100)'" wat.mp4
+
+START: t=1, y=100; END: t=3, y=10

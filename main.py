@@ -1,4 +1,7 @@
+# CONCLUSION: I can't use Tk, doesn't come with ANY widgets wtf, going to use PyQt again
+
 import tkinter as tk
+from tkinter import ttk
 from util import Util
 
 class InputForm(tk.Frame):
@@ -11,11 +14,12 @@ class InputForm(tk.Frame):
     self.lbl_vids = tk.Label(self, text='Videos')
     self.ent_vids = tk.Entry(self)
 
-    self.lbl_test = tk.Label(self, text='laksdjflaksjdflkajsdflk')
+    self.lbl_padding = tk.Label(self, text='Padding')
+    self.spin_padding = tk.Scale(self, from_=0, to=50, orient=tk.HORIZONTAL, showvalue=False)
 
     grid_items = [
       [self.lbl_vids, self.ent_vids],
-      [self.lbl_test]
+      [self.lbl_padding, self.spin_padding]
     ]
 
     self.columnconfigure(1, minsize=50, weight=1)
