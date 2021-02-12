@@ -18,21 +18,29 @@ h_to_w = 9/16
 #-----------
 # User defined values
 #-----------
-rows = 2
-cols = [3,6]
-padding = 30
-root_dir = 'D:\\JonathanLiu\\Videos\\Davinci Resolve\\Virtual Choir Spring 2021\\Singing Valentines\\GREEK GODS - SINGING VALENTINES  (File responses)\\Renders'
-directory = './song3'
+rows = 4
+cols = [18, 18, 18, 18]
+cols_data = {
+  0: ['sophomores' for i in range(18)],
+  1: ['freshmen' for i in range(7)] + ['sophomores' for i in range(11)],
+  2: ['juniors' for i in range(11)] + ['freshmen' for i in range(7)],
+  3: ['juniors' for i in range(18)]
+}
+padding = 8
+root_dir = 'D:\\JonathanLiu\\Videos\\Davinci Resolve\\Virtual Choir Spring 2021\\Seasons of Love\\Renders'
+directory = './'
 mask_img = 'D:\\JonathanLiu\\Videos\\Davinci Resolve\\Virtual Choir Spring 2021\\Singing Valentines\\mask.png'
-start = '55'
-end = '1:08'
-output_file = 'song3_end.mov'
+start = ''
+end = '3:40'
+output_file = 'rest.mov'
 canvas_height = round(1080/2)
 fps = 30
 crop_filter_str = ''
 center_vids = True # whether to center videos if num cols is less than max num cols
 
-assert len(cols) == rows
+assert len(cols) == rows, 'rows and cols don\'t match!'
+for col in cols_data:
+  assert len(cols_data[col]) == cols[col], 'cols_data does not match cols!'
 
 #----------
 # Defaults
@@ -73,49 +81,71 @@ if end: input_str += f'-to {end} '
 input_str += f'-f lavfi -i color=c=0xffffff@0x00:s={canvas_width}x{canvas_height}:r=30,format=rgba '
 
 
-vid_index = 0
-cur_row = 0
-cur_col = 0
 os.chdir(root_dir)
+
+vids = {}
 for subdir, dirs, files in os.walk(directory):
   for file in files:
     filename = os.path.join(subdir, file)
     if filename.endswith(file_exts):
-      # Video indices start after the background index, thus add background_index + 1
-      vid_num = vid_index + (background_index + 1)
+      if subdir not in vids:
+        vids[subdir] = [filename]
+      else:
+        vids[subdir].append(filename)
 
-      # Set timestamp range of video
-      if start: input_str += f'-ss {start} '
-      if end: input_str += f'-to {end} '
+vid_index = 0
+for row in range(rows):
+  for col in range(cols[row]):
+    # Get the filename of the correct video
+    if row in cols_data:
+      # Reference cols_data
+      target_dir = cols_data[row].pop(0)
+      key = ''
+      for subdir in vids:
+        if target_dir in subdir:
+          key = subdir
+          break
+      assert key, 'Folder "' + target_dir + '" doesn\'t exist!'
+      filename = vids[key].pop(0)
+    else:
+      # Just iterate through vids
+      key = list(vids.keys())[0]
+      if len(vids[key]) == 0:
+        del vids[key]
+      key = list(vids.keys())[0]
+      filename = vids[key].pop(0)
 
-      # Add to the input
-      input_str += f'-i "{filename}" '
+    # Video indices start after the background index, thus add background_index + 1
+    vid_num = vid_index + (background_index + 1)
 
-      # Calculate filter to crop video, perform masking if needed
-      filter_complex += f'[{vid_num}:v]fps=fps={fps}, setpts=PTS-STARTPTS, {crop_filter_str}, scale={vid_width}x{vid_height}'
-      if mask_img:
-        filter_complex += f'[b4mask{vid_num}];'
-        filter_complex += f'[0:v]scale={vid_width}:{vid_height}[mask];'
-        filter_complex += f'[b4mask{vid_num}][mask]alphamerge'
-      filter_complex += f'[v{vid_num}];'
+    # Set timestamp range of video
+    if start: input_str += f'-ss {start} '
+    if end: input_str += f'-to {end} '
 
-      # Calculate the x and y position of the video relative to the background
-      xStart = round( (canvas_width - get_total_width(cols[cur_row], vid_width)) / 2 ) if center_vids else 0
-      x = xStart + padding + cur_col*(vid_width+padding)
-      y = padding + cur_row*(vid_height+padding)
+    # Add to the input
+    input_str += f'-i "{filename}" '
 
-      # Overlay videos on top of each other
-      filter_complex += f'[{background_index}:v]' if vid_index == 0 else f'[tmp{vid_num-1}]' 
-      filter_complex += f'[v{vid_num}]overlay='
-      filter_complex += 'repeatlast=0:' if end else 'shortest=1:'  
-      filter_complex += f'x={x}:y={y}[tmp{vid_num}];' 
+    # Calculate filter to crop video, perform masking if needed
+    filter_complex += f'[{vid_num}:v]fps=fps={fps}, setpts=PTS-STARTPTS, {crop_filter_str}, scale={vid_width}x{vid_height}'
+    if mask_img:
+      filter_complex += f'[b4mask{vid_num}];'
+      filter_complex += f'[0:v]scale={vid_width}:{vid_height}[mask];'
+      filter_complex += f'[b4mask{vid_num}][mask]alphamerge'
+    filter_complex += f'[v{vid_num}];'
 
-      # Increment variables
-      vid_index += 1
-      cur_col += 1
-      if cur_col >= cols[cur_row]:
-        cur_col = 0
-        cur_row += 1
+    # Calculate the x and y position of the video relative to the background
+    xStart = round( (canvas_width - get_total_width(cols[row], vid_width)) / 2 ) if center_vids else 0
+    x = xStart + padding + col*(vid_width+padding)
+    y = padding + row*(vid_height+padding)
+
+    # Overlay videos on top of each other
+    filter_complex += f'[{background_index}:v]' if vid_index == 0 else f'[tmp{vid_num-1}]' 
+    filter_complex += f'[v{vid_num}]overlay='
+    filter_complex += 'repeatlast=0:' if end else 'shortest=1:'  
+    filter_complex += f'x={x}:y={y}[tmp{vid_num}];' 
+
+    # Increment variables
+    vid_index += 1
 
 
 final_output = f'[tmp{vid_index + background_index}]'
@@ -124,7 +154,6 @@ filter_complex = filter_complex[:-1] # Get rid of final semicolon
 
 cmd = f'ffmpeg -y {input_str} -filter_complex "{filter_complex}" -map "{final_output}"  {vcodec} "{output_file}"'
 print(cmd)
-
 
 result = util.run_cmd(cmd, root_dir=root_dir)
 print(result.stderr.decode('utf-8'))
