@@ -14,17 +14,21 @@ def get_vids_to_fix(directory):
             print(complete_filepath)
             f.write(complete_filepath + '\n')
           else:
-            # check framerate
-            output = subprocess.run(['ffmpeg', '-i', complete_filepath], capture_output=True, text=True)
-            #print(output.stderr)
-            m = re.search('([\d.k]+) fps', output.stderr)
-            if m:
-              fps = round(float(m.group(1).replace('k', '000')))
-              if fps != 30 and fps != 60:
-                print(complete_filepath, ' FPS:', fps)
-                f.write(complete_filepath + '\n')
-            else: 
-              print('could not find FPS for ', complete_filepath)
+            try: 
+              # check framerate
+              output = subprocess.run(['ffmpeg', '-i', complete_filepath], capture_output=True, text=True)
+              #print(output.stderr)
+              m = re.search('([\d.k]+) fps', output.stderr)
+              if m:
+                fps = round(float(m.group(1).replace('k', '000')))
+                if fps != 30 and fps != 60:
+                  print(complete_filepath, ' FPS:', fps)
+                  f.write(complete_filepath + '\n')
+              else: 
+                print('could not find FPS for ', complete_filepath)
+            except Exception as e:
+              print(e)
+              print('COMMAND FAILED FOR ', complete_filepath) 
 
   print('FINAL FILECOUNT: ', filecount)
 
@@ -54,7 +58,9 @@ def move_old_vids(directory):
       os.rename(filepath, os.path.join(directory, filename))
 
 
-directory = 'D:\\JonathanLiu\\Videos\\Davinci Resolve\\Virtual Choir Spring 2021\\Seasons of Love\\Upload your video here (File responses)'
+directory = 'D:\\JonathanLiu\\Videos\\Davinci Resolve\\Virtual Choir Spring 2021\\A festival rondo\\A Festival Rondo - PAUSD Orchestra Raw Videos'
 #get_vids_to_fix(directory)
 #fix_vids()
 move_old_vids(directory + '/../old')
+
+# a festival rondo filecount: 372

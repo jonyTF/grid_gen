@@ -7,4 +7,4 @@ def convertRowsCols(rc, width, height, which):
   print(f"{width}x{height}, {rc} {'rows' if which == ROW else 'cols'} ==> {num} {'cols' if which == ROW else 'rows'}")
   return num
 
-convertRowsCols(6, 1920, 1080, ROW)
+convertRowsCols(2, 1920, 1080, ROW)

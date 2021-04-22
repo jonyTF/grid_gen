@@ -1,4 +1,6 @@
 *.mov
 __pycache__/
 thumbnails/
-.vscode/settings.json
+.vscode/
+to_fix.txt
+fixed.txt
