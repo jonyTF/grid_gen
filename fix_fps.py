@@ -42,7 +42,13 @@ def fix_vids():
       new_path = '.'.join(filepath.split('.')[:-1]) + '_FIXED.mov'
       cmd = ['ffmpeg', '-y', '-i', filepath, '-r', '30', new_path]
       print(cmd)
-      subprocess.run(cmd)
+      output = subprocess.run(cmd, capture_output=True)
+
+      if output.returncode != 0:
+        print('Conversion FAILED for: ' + filepath)
+        return
+
+      print('Conversion succeeded: ' + new_path)
       f_fixed.write(lines.pop(0) + '\n')
       
       with open('to_fix.txt', 'w') as f_to_fix:
@@ -55,12 +61,17 @@ def move_old_vids(directory):
     lines = [item.strip('\n') for item in f_fixed.readlines()]
     for filepath in lines:
       filename = filepath.split('\\')[-1]
-      os.rename(filepath, os.path.join(directory, filename))
+      try:
+        os.rename(filepath, os.path.join(directory, filename))
+      except FileExistsError as e:
+        os.rename(filepath, os.path.join(directory, filename.split('.')[:-1] + '_2' + filename.split('.')[-1]))
+      except FileNotFoundError as e:
+        print('could not find file: ', filename)
 
 
-directory = 'D:\\JonathanLiu\\Videos\\Davinci Resolve\\Virtual Choir Spring 2021\\A festival rondo\\A Festival Rondo - PAUSD Orchestra Raw Videos'
+directory = 'C:\\Users\\JonathanLiu\\Documents\\vids\\PAUSD Seasons of Love'
 #get_vids_to_fix(directory)
 #fix_vids()
-move_old_vids(directory + '/../old')
+#move_old_vids(directory + '/../old')
 
-# a festival rondo filecount: 372
+# seasons of love file count: 300 - 1
